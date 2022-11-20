@@ -1,14 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import classes from './Login.module.css';
+import { authActions } from '../store/auth-slice';
+import { mailActions } from '../store/mail-slice';
 
 const Login = () => {
   const [hasAccount, setHasAccount] = useState(true);
   const emailRef = useRef();
   const passwordRef = useRef();
   const confirmPasswordRef = useRef();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  // const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
   const hasAccountHandler = () => {
     setHasAccount((preState) => !preState);
@@ -33,7 +38,7 @@ const Login = () => {
       alert('Password and Confirmed password are different');
       return;
     }
-    
+
     try {
       const respense = await fetch(url, {
         method: 'POST',
@@ -51,6 +56,8 @@ const Login = () => {
 
       if (respense.ok) {
         localStorage.setItem('idToken', JSON.stringify(data));
+        dispatch(authActions.login());
+        dispatch(mailActions.firstTime(true));
         navigate('/home');
       } else {
         throw data.error;
@@ -63,7 +70,7 @@ const Login = () => {
   return (
     <div className={classes['main-form']}>
       <form className={classes.form} onSubmit={loginFormHandler}>
-      <div className={classes.title}>{hasAccount ? 'Login' : 'Sign Up'}</div>
+        <div className={classes.title}>{hasAccount ? 'Login' : 'Sign Up'}</div>
         <input type='email' placeholder='Email' ref={emailRef} required />
         <input
           type='password'
